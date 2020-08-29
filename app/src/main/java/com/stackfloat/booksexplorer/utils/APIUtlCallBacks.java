@@ -1,4 +1,4 @@
-package com.stackfloat.booksexplorer;
+package com.stackfloat.booksexplorer.utils;
 
 import java.net.URL;
 
