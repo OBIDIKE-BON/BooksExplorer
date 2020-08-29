@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
                 ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
         mMainActivityViewModel = viewModelProvider.get(MainActivityViewModel.class);
-        final TextView response = findViewById(R.id.tv_response);
+//        final TextView response = findViewById(R.id.tv_response);
         mJSON = "null";
         try {
             URL url = mMainActivityViewModel.buildURL("cooking");
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onChanged(String s) {
                         Log.d(TAG, "onChanged: ");
                         mJSON = s;
-                        response.setText(mJSON);
+//                        response.setText(mJSON);
                     }
                 });
             }
