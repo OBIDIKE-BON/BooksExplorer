@@ -105,28 +105,30 @@ public class APIUtil {
     }
 
     public static ArrayList<String[]> parseJSON(String JSONResult) {
-        ArrayList<String[]> books = new ArrayList<>();
+        ArrayList<String[]> booksList = new ArrayList<>();
         try {
             JSONObject jsonObject = new JSONObject(JSONResult);
             JSONArray itemsArray = jsonObject.getJSONArray("items");
             int i = 0;
             String title;
-            String Authors;
-            String previewLink;
+            String publisher;
             String dateOfPublication;
 
 
             while (i < itemsArray.length()) {
-
+                StringBuilder authors = new StringBuilder();
                 JSONObject jsonBook = itemsArray.getJSONObject(i);
                 JSONObject volumeInfo = jsonBook.getJSONObject("volumeInfo");
                 try {
                     title = volumeInfo.getString("title");
-                    Authors = volumeInfo.getString("authors");
+                    JSONArray authorsArray = volumeInfo.getJSONArray("authors");
+                    for (int x = 0; x < authorsArray.length(); x++) {
+                        authors.append(x == 0 ? authorsArray.getString(x) : ", " + authorsArray.getString(x));
+                    }
                     dateOfPublication = volumeInfo.getString("publishedDate");
-                    previewLink = volumeInfo.getString("previewLink");
-                    String[] book = {title, Authors, dateOfPublication, previewLink};
-                    books.add(book);
+                    publisher = volumeInfo.getString("publisher");
+                    String[] book = {title, authors.toString(), dateOfPublication, publisher};
+                    booksList.add(book);
                 } catch (Exception err) {
 //                    mTitleText.get().setText(R.string.no_result);
 //                    mAuthorText.get().setText("");
@@ -138,9 +140,9 @@ public class APIUtil {
         } catch (JSONException j_err) {
             j_err.printStackTrace();
         }
-        for (String[] book :books) {
+        for (String[] book : booksList) {
             Log.i(TAG, "********************parseJSON:*****************\n\n " + Arrays.toString(book));
         }
-        return books;
+        return booksList;
     }
 }
