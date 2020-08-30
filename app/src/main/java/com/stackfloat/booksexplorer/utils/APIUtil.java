@@ -26,7 +26,7 @@ public class APIUtil {
     private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
     private static final String TAG = APIUtil.class.getSimpleName();
     private static final String QUERY_PARAMETER_KEY = "q";
-    private static final String API_KEY = "AIzaSyDLc6RgHOHecWktJnrNLRqFrDXQ4y2fZn4";
+    private static final String API_KEY = "to be determined";
     private static final String KEY = "key";
 
     private APIUtil() {
