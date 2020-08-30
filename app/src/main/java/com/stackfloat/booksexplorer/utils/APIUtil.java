@@ -1,4 +1,4 @@
-package com.stackfloat.booksexplorer;
+package com.stackfloat.booksexplorer.utils;
 
 import android.net.Uri;
 import android.os.Handler;
@@ -7,10 +7,15 @@ import android.util.Log;
 
 import androidx.core.os.HandlerCompat;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.Executor;
 
@@ -21,7 +26,7 @@ public class APIUtil {
     private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
     private static final String TAG = APIUtil.class.getSimpleName();
     private static final String QUERY_PARAMETER_KEY = "q";
-    private static final String API_KEY = "AIzaSyDLc6RgHOHecWktJnrNLRqFrDXQ4y2fZn4";
+    private static final String API_KEY = "to be determined";
     private static final String KEY = "key";
 
     private APIUtil() {
@@ -38,7 +43,7 @@ public class APIUtil {
         try {
             return new URL(uri.toString());
         } catch (IOException e) {
-            Log.e(TAG, "****************  buildURL: *******************   " + e.getMessage());
+            Log.e(TAG, "****************  buildURL failed: *******************   " + e.getMessage());
             return null;
         }
     }
@@ -51,7 +56,7 @@ public class APIUtil {
                 Log.d(TAG, "run: " + Thread.currentThread().getId());
                 try {
                     String result = asyncQuery(url);
-                    sendResult(result, callBacks);
+                    publishResultToUI(result, callBacks);
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.e(TAG, "run: " + e.getMessage());
@@ -60,7 +65,7 @@ public class APIUtil {
         });
     }
 
-    private static void sendResult(final String result, final APIUtlCallBacks callBacks) {
+    private static void publishResultToUI(final String result, final APIUtlCallBacks callBacks) {
         Handler handler = HandlerCompat.createAsync(Looper.getMainLooper());
         handler.post(new Runnable() {
             @Override
@@ -79,7 +84,7 @@ public class APIUtil {
         httpsURLConnection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
         httpsURLConnection.setRequestProperty("Accept", "application/json");
         try {
-             stream = httpsURLConnection.getInputStream();
+            stream = httpsURLConnection.getInputStream();
             Scanner scanner = new Scanner(stream);
             scanner.useDelimiter("\\A");
             if (scanner.hasNext()) {
@@ -97,5 +102,47 @@ public class APIUtil {
                 httpsURLConnection.disconnect();
             }
         }
+    }
+
+    public static ArrayList<String[]> parseJSON(String JSONResult) {
+        ArrayList<String[]> booksList = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(JSONResult);
+            JSONArray itemsArray = jsonObject.getJSONArray("items");
+            int i = 0;
+            String title;
+            String publisher;
+            String dateOfPublication;
+
+
+            while (i < itemsArray.length()) {
+                StringBuilder authors = new StringBuilder();
+                JSONObject jsonBook = itemsArray.getJSONObject(i);
+                JSONObject volumeInfo = jsonBook.getJSONObject("volumeInfo");
+                try {
+                    title = volumeInfo.getString("title");
+                    JSONArray authorsArray = volumeInfo.getJSONArray("authors");
+                    for (int x = 0; x < authorsArray.length(); x++) {
+                        authors.append(x == 0 ? authorsArray.getString(x) : ", " + authorsArray.getString(x));
+                    }
+                    dateOfPublication = volumeInfo.getString("publishedDate");
+                    publisher = volumeInfo.getString("publisher");
+                    String[] book = {title, authors.toString(), dateOfPublication, publisher};
+                    booksList.add(book);
+                } catch (Exception err) {
+//                    mTitleText.get().setText(R.string.no_result);
+//                    mAuthorText.get().setText("");
+                    Log.e("\n" + APIUtil.TAG, "\n" + err.getMessage() + "********************************\n");
+                    err.printStackTrace();
+                }
+                i++;
+            }
+        } catch (JSONException j_err) {
+            j_err.printStackTrace();
+        }
+        for (String[] book : booksList) {
+            Log.i(TAG, "********************parseJSON:*****************\n\n " + Arrays.toString(book));
+        }
+        return booksList;
     }
 }

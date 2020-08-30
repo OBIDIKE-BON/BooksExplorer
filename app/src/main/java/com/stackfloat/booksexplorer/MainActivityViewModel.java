@@ -5,9 +5,14 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.stackfloat.booksexplorer.utils.APIUtil;
+import com.stackfloat.booksexplorer.utils.APIUtlCallBacks;
+
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
 public class MainActivityViewModel extends AndroidViewModel {
@@ -21,6 +26,7 @@ public class MainActivityViewModel extends AndroidViewModel {
             new Thread(runnable).start();
         }
     };
+    public MutableLiveData<ArrayList<String[]>> mBooks= new MutableLiveData<>();
 
     public MainActivityViewModel(@NonNull Application application) {
         super(application);
@@ -38,7 +44,12 @@ public class MainActivityViewModel extends AndroidViewModel {
             public void onQueryResult(String JSONResponse) {
                 Log.d(TAG, "onQueryResult: ");
                 JSONResponseMutableLiveData.setValue(JSONResponse);
+                mBooks .setValue(getBooks(JSONResponse));
+
             }
         });
+    }
+    public ArrayList<String[]> getBooks(String JSONResponse){
+        return APIUtil.parseJSON(JSONResponse);
     }
 }
