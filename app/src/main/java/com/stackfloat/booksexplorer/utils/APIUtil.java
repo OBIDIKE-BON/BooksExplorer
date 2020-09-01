@@ -21,12 +21,13 @@ import java.util.concurrent.Executor;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class APIUtil {
+public class APIUtil implements APIUtilAPIKey {
 
     private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
     private static final String TAG = APIUtil.class.getSimpleName();
     private static final String QUERY_PARAMETER_KEY = "q";
-    private static final String API_KEY = "to be determined";
+    // Parameter that limits search results.
+    private static final String MAX_RESULTS = "maxResults";
     private static final String KEY = "key";
 
     private APIUtil() {
@@ -37,6 +38,7 @@ public class APIUtil {
                 .buildUpon()
                 .appendQueryParameter(QUERY_PARAMETER_KEY, queryString)
                 .appendQueryParameter(KEY, API_KEY)
+                .appendQueryParameter(MAX_RESULTS, "40")
                 .build();
 
         Log.d(TAG, "buildURL: " + uri.toString());
@@ -105,7 +107,8 @@ public class APIUtil {
     }
 
     public static ArrayList<String[]> parseJSON(String JSONResult) {
-        ArrayList<String[]> booksList = new ArrayList<>();
+       if (JSONResult!=null){
+           ArrayList<String[]> booksList = new ArrayList<>();
         try {
             JSONObject jsonObject = new JSONObject(JSONResult);
             JSONArray itemsArray = jsonObject.getJSONArray("items");
@@ -144,5 +147,8 @@ public class APIUtil {
             Log.i(TAG, "********************parseJSON:*****************\n\n " + Arrays.toString(book));
         }
         return booksList;
+    }
+       else
+           return new ArrayList<String[]>();
     }
 }

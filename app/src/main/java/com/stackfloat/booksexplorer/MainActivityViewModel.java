@@ -44,7 +44,7 @@ public class MainActivityViewModel extends AndroidViewModel {
             public void onQueryResult(String JSONResponse) {
                 Log.d(TAG, "onQueryResult: ");
                 JSONResponseMutableLiveData.setValue(JSONResponse);
-                mBooks .setValue(getBooks(JSONResponse));
+                mBooks.setValue(getBooks(JSONResponse));
 
             }
         });
