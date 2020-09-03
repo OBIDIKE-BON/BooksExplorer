@@ -1,9 +1,11 @@
 package com.stackfloat.booksexplorer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,13 +16,13 @@ import java.util.ArrayList;
 public class BooksRecyclerAdapter extends RecyclerView.Adapter<BooksRecyclerAdapter.ViewHolder> {
 
     public final Context mContext;
-    private ArrayList<String[]> mBookList;
+    private ArrayList<Book> mBookList;
 
     public BooksRecyclerAdapter(Context context) {
         mContext = context;
     }
 
-    public void setBookList(ArrayList<String[]> listLiveBioData) {
+    public void setBookList(ArrayList<Book> listLiveBioData) {
         mBookList = listLiveBioData;
         notifyDataSetChanged();
     }
@@ -51,24 +53,33 @@ public class BooksRecyclerAdapter extends RecyclerView.Adapter<BooksRecyclerAdap
         private TextView mBookDatePublished;
         private TextView mBookAuthors;
         private TextView mBookPublisher;
-//        private ImageView mBookImage;
+        private ImageView mBookImage;
         public int mCurrentPosition;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mBookTitle = itemView.findViewById(R.id.txt_book_title);
             mBookAuthors = itemView.findViewById(R.id.txt_authors);
-//            mBookImage = itemView.findViewById(R.id.imageView);
+            mBookImage = itemView.findViewById(R.id.imageView);
             mBookDatePublished = itemView.findViewById(R.id.txt_date_publishe);
             mBookPublisher = itemView.findViewById(R.id.txt_publisher);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent= new Intent(mContext, BookDetailsActivity.class);
+                    intent.putExtra(BookDetailsActivity.EXTRA_BOOK,mBookList.get(mCurrentPosition));
+                    mContext.startActivity(intent);
+                }
+            });
         }
 
         public void displayBook(int position) {
-            String[] book= mBookList.get(position);
-            mBookTitle.setText(book[0]);
-            mBookAuthors.setText(book[1]);
-            mBookDatePublished.setText(book[2]);
-            mBookPublisher.setText(book[3]);
+            Book book= mBookList.get(position);
+            mBookTitle.setText(book.title);
+            mBookAuthors.setText(book.authors);
+            mBookDatePublished.setText(book.dateOfPublication);
+            mBookPublisher.setText(book.publisher);
+            LoadImageWithPicasso.loadImage(mBookImage, book.thumbnail, R.drawable.ic_action_name);
         }
     }
 }

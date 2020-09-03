@@ -2,4 +2,6 @@
     <string name="app_name">BooksExplorer</string>
     <string name="preview">Preview</string>
     <string name="search">Search</string>
+    <string name="error_message">An Error Ocoured, PleaseTry Again!</string>
+    <string name="book_cover">Book Cover</string>
 </resources>

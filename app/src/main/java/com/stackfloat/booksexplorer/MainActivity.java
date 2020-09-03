@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mProgressBar = findViewById(R.id.progressBar);
-        err = findViewById(R.id.textView);
+        err = findViewById(R.id.txt_error);
         ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
                 ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
         mMainActivityViewModel = viewModelProvider.get(MainActivityViewModel.class);
@@ -44,9 +43,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         mRecyclerView = findViewById(R.id.rv_search_list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mBooksRecyclerAdapter);
-        mMainActivityViewModel.mBooks.observe(this, new Observer<ArrayList<String[]>>() {
+        mMainActivityViewModel.mBooks.observe(this, new Observer<ArrayList<Book>>() {
             @Override
-            public void onChanged(ArrayList<String[]> books) {
+            public void onChanged(ArrayList<Book> books) {
                 Log.d(TAG, "onChanged: ");
                 if (books.size() != 0) {
                     mBooksRecyclerAdapter.setBookList(books);

@@ -7,6 +7,8 @@ import android.util.Log;
 
 import androidx.core.os.HandlerCompat;
 
+import com.stackfloat.booksexplorer.Book;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.Executor;
 
@@ -29,6 +30,17 @@ public class APIUtil implements APIUtilAPIKey {
     // Parameter that limits search results.
     private static final String MAX_RESULTS = "maxResults";
     private static final String KEY = "key";
+
+    private static final String ID = "id";
+    private static final String VOLUME_INFO = "volumeInfo";
+    private static final String TITLE = "title";
+    private static final String AUTHORS = "authors";
+    private static final String PUBLISHED_DATE = "publishedDate";
+    private static final String PUBLISHER = "publisher";
+    private static final String SUBTITLE = "subtitle";
+    private static final String DESCRIPTION = "description";
+    private static final String THUMBNAIL = "thumbnail";
+    private static final String IMAGE_LINKS = "imageLinks";
 
     private APIUtil() {
     }
@@ -106,49 +118,65 @@ public class APIUtil implements APIUtilAPIKey {
         }
     }
 
-    public static ArrayList<String[]> parseJSON(String JSONResult) {
-       if (JSONResult!=null){
-           ArrayList<String[]> booksList = new ArrayList<>();
-        try {
-            JSONObject jsonObject = new JSONObject(JSONResult);
-            JSONArray itemsArray = jsonObject.getJSONArray("items");
-            int i = 0;
-            String title;
-            String publisher;
-            String dateOfPublication;
+    public static ArrayList<Book> getBookFromJSON(String JSONResult) {
+        if (JSONResult != null) {
+            ArrayList<Book> booksList = new ArrayList<>();
+            try {
+                JSONObject jsonObject = new JSONObject(JSONResult);
+                JSONArray itemsArray = jsonObject.getJSONArray("items");
+                String title;
+                String publisher;
+                String dateOfPublication;
+                String thumbnail;
+                String id ;
+                String subTitle;
+                String description;
 
+                int i = 0;
+                while (i < itemsArray.length()) {
+                    StringBuilder authors = new StringBuilder();
+                    JSONObject jsonBook = itemsArray.getJSONObject(i);
+                    JSONObject volumeInfo = jsonBook.getJSONObject(VOLUME_INFO);
+                    try {
+                        title = volumeInfo.getString(TITLE);
+                        JSONArray authorsArray = volumeInfo.getJSONArray(AUTHORS);
+                        for (int x = 0; x < authorsArray.length(); x++) {
+                            authors.append(x == 0 ? authorsArray.getString(x) : ", " + authorsArray.getString(x));
+                        }
+                        dateOfPublication = volumeInfo.getString(PUBLISHED_DATE);
+                        publisher = volumeInfo.getString(PUBLISHER);
+                        thumbnail=volumeInfo.getJSONObject(IMAGE_LINKS).getString(THUMBNAIL);
+                        id = jsonBook.getString(ID);
+                        subTitle = volumeInfo.isNull(SUBTITLE) ? "" : volumeInfo.getString(SUBTITLE);
+                        description = volumeInfo.getString(DESCRIPTION);
 
-            while (i < itemsArray.length()) {
-                StringBuilder authors = new StringBuilder();
-                JSONObject jsonBook = itemsArray.getJSONObject(i);
-                JSONObject volumeInfo = jsonBook.getJSONObject("volumeInfo");
-                try {
-                    title = volumeInfo.getString("title");
-                    JSONArray authorsArray = volumeInfo.getJSONArray("authors");
-                    for (int x = 0; x < authorsArray.length(); x++) {
-                        authors.append(x == 0 ? authorsArray.getString(x) : ", " + authorsArray.getString(x));
-                    }
-                    dateOfPublication = volumeInfo.getString("publishedDate");
-                    publisher = volumeInfo.getString("publisher");
-                    String[] book = {title, authors.toString(), dateOfPublication, publisher};
-                    booksList.add(book);
-                } catch (Exception err) {
+                        Book book = new Book(
+                                id,
+                                title,
+                                subTitle,
+                                dateOfPublication,
+                                publisher,
+                                authors.toString(),
+                                description,
+                                thumbnail
+                        );
+                        booksList.add(book);
+                    } catch (Exception err) {
 //                    mTitleText.get().setText(R.string.no_result);
 //                    mAuthorText.get().setText("");
-                    Log.e("\n" + APIUtil.TAG, "\n" + err.getMessage() + "********************************\n");
-                    err.printStackTrace();
+                        Log.e("\n" + APIUtil.TAG, "\n" + err.getMessage() + "********************************\n");
+                        err.printStackTrace();
+                    }
+                    i++;
                 }
-                i++;
+            } catch (JSONException j_err) {
+                j_err.printStackTrace();
             }
-        } catch (JSONException j_err) {
-            j_err.printStackTrace();
-        }
-        for (String[] book : booksList) {
-            Log.i(TAG, "********************parseJSON:*****************\n\n " + Arrays.toString(book));
-        }
-        return booksList;
-    }
-       else
-           return new ArrayList<String[]>();
+            for (Book book : booksList) {
+                Log.i(TAG, "********************parseJSON:*****************\n\n " + (book.title));
+            }
+            return booksList;
+        } else
+            return new ArrayList<>();
     }
 }
