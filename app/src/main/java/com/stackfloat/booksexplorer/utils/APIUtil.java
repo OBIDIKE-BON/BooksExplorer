@@ -24,7 +24,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class APIUtil implements APIUtilAPIKey {
 
-    private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
+    private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes?";
     private static final String TAG = APIUtil.class.getSimpleName();
     private static final String QUERY_PARAMETER_KEY = "q";
     // Parameter that limits search results.
@@ -41,22 +41,36 @@ public class APIUtil implements APIUtilAPIKey {
     private static final String DESCRIPTION = "description";
     private static final String THUMBNAIL = "thumbnail";
     private static final String IMAGE_LINKS = "imageLinks";
+    private static final String IN_TITLE = "intitle:";
+    private static final String IN_AUTHORS = "inauthor:";
+    private static final String IN_PUBLISHER = "inpublisher:";
+    private static final String ISBN = "isbn:";
 
     private APIUtil() {
+    }
+
+    public static String buildSearchURL(String title, String author, String publisher, String isbn) {
+        StringBuilder builder = new StringBuilder();
+        if (!title.isEmpty()) builder.append(IN_TITLE).append(title).append("+");
+        if (!author.isEmpty()) builder.append(IN_AUTHORS).append(author).append("+");
+        if (!publisher.isEmpty()) builder.append(IN_PUBLISHER).append(publisher).append("+");
+        if (!isbn.isEmpty()) builder.append(ISBN).append(isbn).append("+");
+        builder.setLength(builder.length() - 1);
+        return builder.toString();
     }
 
     public static URL buildURL(String queryString) {
         Uri uri = Uri.parse(API_BASE_URL)
                 .buildUpon()
                 .appendQueryParameter(QUERY_PARAMETER_KEY, queryString)
-                .appendQueryParameter(KEY, API_KEY)
+//                .appendQueryParameter(KEY, API_KEY)
                 .appendQueryParameter(MAX_RESULTS, "40")
                 .build();
 
         Log.d(TAG, "buildURL: " + uri.toString());
         try {
             return new URL(uri.toString());
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e(TAG, "****************  buildURL failed: *******************   " + e.getMessage());
             return null;
         }
@@ -128,7 +142,7 @@ public class APIUtil implements APIUtilAPIKey {
                 String publisher;
                 String dateOfPublication;
                 String thumbnail;
-                String id ;
+                String id;
                 String subTitle;
                 String description;
 
@@ -138,17 +152,18 @@ public class APIUtil implements APIUtilAPIKey {
                     JSONObject jsonBook = itemsArray.getJSONObject(i);
                     JSONObject volumeInfo = jsonBook.getJSONObject(VOLUME_INFO);
                     try {
-                        title = volumeInfo.getString(TITLE);
-                        JSONArray authorsArray = volumeInfo.getJSONArray(AUTHORS);
+                        title = volumeInfo.isNull(TITLE) ? "Title: not available" : volumeInfo.getString(TITLE);
+                        JSONArray authorsArray = volumeInfo.isNull(AUTHORS) ? new JSONArray() : volumeInfo.getJSONArray(AUTHORS);
                         for (int x = 0; x < authorsArray.length(); x++) {
                             authors.append(x == 0 ? authorsArray.getString(x) : ", " + authorsArray.getString(x));
                         }
-                        dateOfPublication = volumeInfo.getString(PUBLISHED_DATE);
-                        publisher = volumeInfo.getString(PUBLISHER);
-                        thumbnail=volumeInfo.getJSONObject(IMAGE_LINKS).getString(THUMBNAIL);
-                        id = jsonBook.getString(ID);
-                        subTitle = volumeInfo.isNull(SUBTITLE) ? "" : volumeInfo.getString(SUBTITLE);
-                        description = volumeInfo.getString(DESCRIPTION);
+                        dateOfPublication = volumeInfo.isNull(PUBLISHED_DATE) ? "Published date: not available"  : volumeInfo.getString(PUBLISHED_DATE);
+                        publisher = volumeInfo.isNull(PUBLISHER) ?  "Publisher: not available" : volumeInfo.getString(PUBLISHER);
+                        JSONObject object = volumeInfo.isNull(IMAGE_LINKS) ? new JSONObject() : volumeInfo.getJSONObject(IMAGE_LINKS);
+                        thumbnail = object.isNull(THUMBNAIL) ?  "" : object.getString(THUMBNAIL);
+                        id = jsonBook.isNull(ID) ?  "Id: not available" : jsonBook.getString(ID);
+                        subTitle = volumeInfo.isNull(SUBTITLE) ?  "Sub title: not available" : volumeInfo.getString(SUBTITLE);
+                        description = volumeInfo.isNull(DESCRIPTION) ?  "Description: not available" : volumeInfo.getString(DESCRIPTION);
 
                         Book book = new Book(
                                 id,

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,17 +18,21 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.stackfloat.booksexplorer.utils.APIUtil;
+
 import java.net.URL;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
+    public static final String EXTRA_QUERY = "com.stackfloat.booksexplorer.MainActivity.Query";
     private static final String TAG = MainActivity.class.getSimpleName();
     private MainActivityViewModel mMainActivityViewModel;
     private BooksRecyclerAdapter mBooksRecyclerAdapter;
     private RecyclerView mRecyclerView;
     private ProgressBar mProgressBar;
     private TextView err;
+    private String mQueryString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +57,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     mRecyclerView.setVisibility(View.VISIBLE);
                     mProgressBar.setVisibility(View.INVISIBLE);
                     err.setVisibility(View.INVISIBLE);
-                }else {
+                } else {
                     mProgressBar.setVisibility(View.INVISIBLE);
                     err.setText("No Results Found, Please Search Again!");
                     err.setVisibility(View.VISIBLE);
                 }
             }
         });
-        loadBook("google");
+        mQueryString = " google";
+        String query = getIntent().getStringExtra(EXTRA_QUERY);
+        if (query != null && !query.isEmpty()) {
+            mQueryString = query;
+        }
+        loadBook(mQueryString);
     }
 
     private void loadBook(String queryString) {
@@ -79,28 +89,25 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.books_search_menu, menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()/*new ComponentName(this,SearchActivity.class)*/));
-        searchView.setIconifiedByDefault(true);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String queryString) {
-                if ((queryString.length()!=0)) {
-                    loadBook(queryString);
-                    mRecyclerView.setVisibility(View.INVISIBLE);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+        searchView.setOnQueryTextListener(this
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
+//        if ((queryString.length()!=0)) {
+//            loadBook(queryString);
+//            mRecyclerView.setVisibility(View.INVISIBLE);
+//            return true;
+//        } else {
+//            return false;
+//        }
+        );
+        MenuItem serachItem;
+        ArrayList<String> recentAdvancedSearchLIst = SharedPrefs.getRecentAdvancedSearchLIst(this);
+        for (int i = 0; i < recentAdvancedSearchLIst.size(); i++) {
+            serachItem = menu.add(Menu.NONE, i, Menu.NONE, recentAdvancedSearchLIst.get(i));
+        }
         return true;
     }
 
@@ -114,14 +121,37 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
             return true;
+        } else if (id == R.id.action_advanced_search) {
+            startActivity(new Intent(this, AdvancedSearchActivity.class));
+            return true;
         } else {
+            int position = id + 1;
+            String prefName = SharedPrefs.QUERY + position;
+            String recentAdvancedSearch = SharedPrefs.getStringPref(this, prefName);
+            String[] prefParams = recentAdvancedSearch.split("\\,");
+            String[] queryParams = new String[4];
+            System.arraycopy(prefParams, 0, queryParams, 0, prefParams.length);
+            String url = APIUtil.buildSearchURL(
+                    queryParams[0] == null ? "" : queryParams[0],
+                    queryParams[1] == null ? "" : queryParams[1],
+                    queryParams[2] == null ? "" : queryParams[2],
+                    queryParams[3] == null ? "" : queryParams[3]
+            );
+            loadBook(url);
+
             return super.onOptionsItemSelected(item);
         }
     }
 
     @Override
     public boolean onQueryTextSubmit(String queryString) {
-        return false;
+        if ((queryString.length() != 0)) {
+            loadBook(queryString);
+            mRecyclerView.setVisibility(View.INVISIBLE);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

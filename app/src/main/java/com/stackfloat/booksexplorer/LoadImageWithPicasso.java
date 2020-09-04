@@ -2,10 +2,10 @@ package com.stackfloat.booksexplorer;
 
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+
 import com.squareup.picasso.Picasso;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class LoadImageWithPicasso {
     private LoadImageWithPicasso(){}
@@ -17,12 +17,19 @@ public class LoadImageWithPicasso {
      *
      * @param view @ImageView to load the image into
      * @param imageUrl url of the image to be loaded
-     * @param resourceId ResourceId of a placeHolder image
+     * @param resourceId ResourceId of a placeHolder image that will
+     *                   also act as a fallback if a book has no cover image
      */
-    public static void loadImage(@NotNull ImageView view, String imageUrl, int resourceId){
-        Picasso.with(view.getContext())
-                .load(imageUrl)
-                .placeholder(resourceId)
-                .into(view);
+    public static void loadImage(@NonNull ImageView view,
+                                 String imageUrl,
+                                @NonNull Integer resourceId){
+        if (imageUrl==null || imageUrl.equals("")) {
+            view.setImageResource(resourceId);
+        }else {
+            Picasso.with(view.getContext())
+                    .load(imageUrl)
+                    .placeholder(resourceId)
+                    .into(view);
+        }
     }
 }

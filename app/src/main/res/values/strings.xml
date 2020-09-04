@@ -4,4 +4,11 @@
     <string name="search">Search</string>
     <string name="error_message">An Error Ocoured, PleaseTry Again!</string>
     <string name="book_cover">Book Cover</string>
+    <string name="search_button_description">Search button</string>
+    <string name="insert_isbn_hint">Insert Isbn</string>
+    <string name="insert_publisher_hint">Insert Publisher</string>
+    <string name="insert_authors_hint">Insert Author(s)</string>
+    <string name="insert_title_hint">Insert Title</string>
+    <string name="no_text_error">please fill in At least one text field!</string>
+    <string name="advanced_search">Advanced Search</string>
 </resources>
